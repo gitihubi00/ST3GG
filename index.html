@@ -3034,9 +3034,9 @@
                     <div class="form-group">
                         <label>Model</label>
                         <select id="aiagent-model" class="select">
-                            <option value="anthropic/claude-opus-4.6">Claude Opus 4.6 (Most Capable)</option>
+                            <option value="anthropic/claude-opus-4.6" selected>Claude Opus 4.6 (Recommended)</option>
                             <option value="anthropic/claude-sonnet-4.6">Claude Sonnet 4.6</option>
-                            <option value="openai/gpt-5.4" selected>GPT-5.4 (Recommended)</option>
+                            <option value="openai/gpt-5.4">GPT-5.4</option>
                             <option value="google/gemini-3.1-pro">Gemini 3.1 Pro</option>
                             <option value="x-ai/grok-4.20">Grok 4.20</option>
                             <option value="anthropic/claude-haiku-4.5">Claude Haiku 4.5 (Fastest)</option>
@@ -5251,11 +5251,26 @@
             const unitsNeeded = Math.ceil(bitsNeeded / bitsPerChannel);
             const bitMask = (1 << bitsPerChannel) - 1;
 
-            const result = [];
+            // Skip channels that are constant (e.g., fully opaque alpha = all 0xFF)
+            // Extracting LSB from constant channels gives meaningless data
+            const activeChannels = channels.filter(ch => {
+                const first = pixels[ch] & bitMask;
+                // Check first 100 pixels for any variation
+                for (let i = 1; i < Math.min(100, totalPixels); i++) {
+                    if ((pixels[i * 4 + ch] & bitMask) !== first) return true;
+                }
+                return false; // All same = constant = skip
+            });
 
+            if (activeChannels.length === 0) {
+                // All requested channels are constant, return empty
+                return new Uint8Array(0);
+            }
+
+            const result = [];
             for (let pixIdx = 0; pixIdx < totalPixels && result.length < unitsNeeded; pixIdx++) {
                 const baseIdx = pixIdx * 4;
-                for (const ch of channels) {
+                for (const ch of activeChannels) {
                     if (result.length >= unitsNeeded) break;
                     result.push(pixels[baseIdx + ch] & bitMask);
                 }
@@ -5546,41 +5561,58 @@
             }
 
             // Count printable characters - include Unicode, exclude only control chars
-            // Control chars: 0x00-0x1F (except tab 0x09, newline 0x0A, CR 0x0D), 0x7F, 0x80-0x9F
             for (const char of text.slice(0, 500)) {
                 const code = char.charCodeAt(0);
-                // Whitespace chars are fine
                 if (char === '\n' || char === '\t' || char === '\r' || char === ' ') {
                     printableCount++;
-                }
-                // ASCII printable (0x21-0x7E)
-                else if (code >= 0x21 && code <= 0x7E) {
+                } else if (code >= 0x21 && code <= 0x7E) {
+                    printableCount++;
+                } else if (code >= 0x100) {
+                    printableCount++;
+                } else if (code >= 0xA0 && code <= 0xFF) {
                     printableCount++;
                 }
-                // Unicode characters above ASCII range (0x100+) - these are valid text
-                else if (code >= 0x100) {
-                    printableCount++;
-                }
-                // Latin-1 supplement printable (0xA0-0xFF) - common accented chars, symbols
-                else if (code >= 0xA0 && code <= 0xFF) {
-                    printableCount++;
-                }
-                // Skip control characters (0x00-0x1F except whitespace, 0x7F, 0x80-0x9F)
             }
 
             const ratio = printableCount / Math.min(text.length, 500);
-            const commonWords = ['the', 'and', 'is', 'in', 'to', 'of', 'a', 'for', 'flag', 'ctf', 'secret'];
-            const textLower = text.toLowerCase();
-            const wordMatches = commonWords.filter(w => textLower.includes(w)).length;
 
-            let confidence = ratio * 50 + wordMatches * 5;
+            // Reject repetitive patterns (e.g., "passwordpasswordpassword")
+            // Check if any short substring (4-20 chars) repeats more than 3 times
+            const sample = text.slice(0, 200);
+            let isRepetitive = false;
+            for (let patLen = 4; patLen <= 20; patLen++) {
+                const pat = sample.slice(0, patLen);
+                if (pat.length < patLen) break;
+                let repeats = 0;
+                for (let i = 0; i <= sample.length - patLen; i += patLen) {
+                    if (sample.slice(i, i + patLen) === pat) repeats++;
+                }
+                if (repeats >= 4) {
+                    isRepetitive = true;
+                    break;
+                }
+            }
+            if (isRepetitive) {
+                return { isText: false, confidence: 5, preview: text.slice(0, 100), ratio, repetitive: true };
+            }
+
+            // Check for meaningful words (require at least 2 real word matches for high confidence)
+            const commonWords = ['the', 'and', 'is', 'in', 'to', 'of', 'for', 'flag', 'ctf', 'secret', 'hidden', 'message'];
+            const textLower = text.toLowerCase();
+            const wordMatches = commonWords.filter(w => {
+                // Match whole words only (surrounded by non-alpha or at boundaries)
+                const regex = new RegExp('\\b' + w + '\\b');
+                return regex.test(textLower);
+            }).length;
+
+            let confidence = ratio * 40 + wordMatches * 10;
             confidence = Math.min(100, Math.max(0, confidence));
 
             // Preview: keep Unicode chars visible, only replace actual control chars with ·
             const preview = text.slice(0, 100).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '·');
 
             return {
-                isText: confidence > 35 && ratio > 0.7,
+                isText: confidence > 40 && ratio > 0.75 && wordMatches >= 1,
                 confidence,
                 preview,
                 ratio
@@ -16527,7 +16559,7 @@
                         try {
                             const decrypted = xorDecrypt(rawData, pwd);
                             const analysis = detectCoherentText(decrypted);
-                            if (analysis.confidence > 50) {
+                            if (analysis.confidence > 60 && analysis.isText && !analysis.repetitive) {
                                 results.push({ password: pwd, confidence: analysis.confidence, preview: analysis.preview });
                             }
                         } catch (e) {}
@@ -18759,61 +18791,85 @@ ${formatChecklistForPrompt(checklist, true)}
             }
 
             // Build the system prompt
-            const systemPrompt = `You are an expert steganography analyst AI agent. You have access to these tools:
+            const systemPrompt = `You are ST3GG ALLSIGHT — an expert steganography analysis agent. Your job is to methodically test every known data-hiding technique against the uploaded file and report ONLY verified, high-confidence findings.
 
+⊰ AVAILABLE TOOLS ⊱
 ${toolDescriptions}
 
+⊰ FILE CONTEXT ⊱
 Image dimensions: ${canvas.width}x${canvas.height} pixels
 File type detected: ${state.aiAgentFileType || 'UNKNOWN'}
 Raw file bytes available: ${state.aiAgentFileBytes ? 'YES (' + state.aiAgentFileBytes.length + ' bytes)' : 'NO'}
 
-IMPORTANT: You can call MULTIPLE tools in PARALLEL for efficiency! When tools are independent, call them together.
+⊰ RESPONSE FORMAT ⊱
+Always respond with a JSON code block. You can call MULTIPLE tools in PARALLEL when they are independent.
 
-Response format - use a JSON code block with "tool_calls" array:
+To call tools:
 \`\`\`json
 {
-  "thinking": "Your reasoning about what to try next",
+  "thinking": "Brief reasoning about what to try and why",
   "tool_calls": [
     {"tool": "smart_scan", "params": {}},
-    {"tool": "lsb_extract", "params": {"channels": [2], "bits": 1}},
-    {"tool": "analyze_histogram", "params": {}}
+    {"tool": "extract_metadata", "params": {}},
+    {"tool": "detect_trailing_data", "params": {}}
   ]
 }
 \`\`\`
 
-For findings:
+To report a confirmed finding:
 \`\`\`json
-{"action": "report_finding", "method": "technique name", "result": "description of what you found"}
+{"action": "report_finding", "method": "technique name", "result": "what was found and how to decode it"}
 \`\`\`
 
-When done:
+To finish:
 \`\`\`json
-{"action": "conclude", "summary": "Final analysis summary"}
+{"action": "conclude", "summary": "Final summary of all findings (or confirmation that no hidden data was found)"}
 \`\`\`
 ${checklistSection}
 
-Strategy tips:
-1. Start with smart_scan, get_image_info, extract_metadata, detect_trailing_data, and fuzz_all_channels in parallel
-2. fuzz_all_channels tests 160+ extraction methods automatically - USE IT EARLY
-3. Use parse_file_structure to inspect PNG chunks, JPEG markers, GIF blocks, etc.
-4. Use extract_metadata to find hidden text in EXIF, PNG text chunks, JPEG comments, XMP, ICC profiles
-5. Use detect_trailing_data to check for data appended after the file's EOF marker
-6. Use scan_embedded_files for binwalk-style scanning of embedded file signatures
-7. Use godmode_detect to check for GODMODE channel cipher steganography
-8. Use matryoshka_scan to detect nested images-within-images
-9. Follow up on any findings with targeted extraction using extract_artifact
-10. Try DCT and chroma for JPEG-resistant methods
-11. Use analyze_histogram to detect LSB anomalies
-12. Try common passwords if data looks encrypted
-${exhaustiveMode ? '13. In EXHAUSTIVE MODE: Use get_checklist and try_checklist_item to systematically test EVERY technique' : ''}
+⊰ ANALYSIS STRATEGY ⊱
+Phase 1 — Broad reconnaissance (run in parallel):
+  • smart_scan — tests 16+ channel/bit STEG header configurations
+  • fuzz_all_channels — brute-forces 160+ extraction methods
+  • get_image_info — dimensions, mode, color statistics
+  • extract_metadata — EXIF, PNG text chunks, JPEG comments, XMP, ICC profiles
+  • detect_trailing_data — data appended after file EOF marker
+  • parse_file_structure — PNG chunks, JPEG markers, GIF blocks
 
-CRITICAL RULES:
-- DO NOT conclude early! You MUST try ALL major extraction methods before concluding
-- When you find hidden data, ALWAYS use extract_artifact to extract and display it to the user
-- Report findings as you discover them (don't wait until the end)
-- Even after finding something, KEEP TESTING other methods - there may be multiple hidden payloads
-- Only use "conclude" action after exhaustively testing: LSB (all channels), DCT, Chroma, metadata, trailing data, file structure, and password attempts
-${exhaustiveMode ? '- In EXHAUSTIVE MODE: Do not conclude until every checklist item has been tried!' : ''}`;
+Phase 2 — Targeted analysis (based on Phase 1 results):
+  • analyze_histogram — detect LSB statistical anomalies
+  • scan_embedded_files — binwalk-style signature scanning
+  • godmode_detect — GODMODE channel cipher patterns
+  • matryoshka_scan — nested images-within-images
+  • DCT/chroma extraction — JPEG-resistant frequency domain methods
+
+Phase 3 — Deep extraction (only if evidence found):
+  • extract_artifact — extract and decode confirmed payloads
+  • try_common_passwords — XOR/AES decrypt with common keys
+  • Targeted LSB with specific channel/bit configs from Phase 1 hits
+
+⊰ CRITICAL RULES — READ CAREFULLY ⊱
+
+VALIDATION (prevent false positives):
+  • NEVER report a finding unless you can show the actual decoded content
+  • Reject "passwordpassword..." or any repeating pattern — this is XOR noise, not real data
+  • If alpha channel is fully opaque (all 0xFF), skip alpha-only extraction entirely
+  • Random-looking hex output is NOT a finding — it needs to be decodable text, a valid file, or structured data
+  • Low-confidence extractions (garbled text, control characters) are NOT findings
+  • Base64 that decodes to garbage is NOT a finding
+
+THOROUGHNESS:
+  • DO NOT conclude early — you MUST complete Phases 1-2 before concluding
+  • When you find something, KEEP TESTING — there may be multiple hidden payloads
+  • Report findings as you discover them, don't batch them
+  • Always use extract_artifact to make confirmed data downloadable
+${exhaustiveMode ? '  • EXHAUSTIVE MODE: Use get_checklist and try_checklist_item to test EVERY technique before concluding' : ''}
+
+COMMUNICATION:
+  • In your "thinking" field, explain your reasoning clearly
+  • After Phase 1, summarize what looks promising before diving deeper
+  • If nothing is found, say so confidently — "no hidden data detected" is a valid and valuable result
+  • Don't speculate about what MIGHT be hidden — only report what IS found`;
 
             const messages = [{ role: 'system', content: systemPrompt }];
 
