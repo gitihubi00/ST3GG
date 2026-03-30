@@ -9,6 +9,7 @@ textual>=0.40.0
 
 # Web UI (NiceGUI - modern alternative to Streamlit)
 nicegui>=1.4.0
+fastapi>=0.100.0
 
 # Legacy Web UI (Streamlit)
 streamlit>=1.28.0

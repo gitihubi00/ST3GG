@@ -17,12 +17,12 @@
 
 **Hide anything. In any file. Across every modality. Undetected.**
 
-👉 **Hosted site:** [ste.gg](https://ste.gg)
+👉 **Hosted site: [ste.gg](https://ste.gg)**
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
-[![60+ Examples](https://img.shields.io/badge/Examples-60%2B_files-purple.svg)](examples/)
+[![100+ Examples](https://img.shields.io/badge/Examples-100%2B_files-purple.svg)](examples/)
 
 ```
        __                                    .--.
@@ -46,7 +46,7 @@
 
 ## ⊰ What Is ST3GG? ⊱
 
-​‌​​​​​‌​​‌‌​​​‌​​‌​​‌​‌​​‌‌‌​​‌​‌‌​​‌​​‌​​​​​​‌​​‌‌​​​‌​​‌‌‌‌​‌​‌​‌‌​​‌​​​‌​‌​‌​‌​​‌‌​​‌​​​​​​‌​‌‌​​‌​‌​​‌‌‌‌​‌​‌​‌[STE.GG](https://ste.gg)​‌‍ is a feature-rich, open-source steganography toolkit that hides secret data inside images, audio, documents, network packets, and more — using **75+ encoding techniques** across every file format imaginable.
+[STE.GG](https://ste.gg)‍​‌​‌​​​​​‌​​‌‌​​​‌​​‌​​‌​‌​​‌‌‌​​‌​‌‌​​‌​​‌​​​​​​‌​​‌‌​​​‌​​‌‌‌‌​‌​‌​‌‌​​‌​​​‌​‌​‌​‌​​‌‌​​‌​​​​​​‌​‌‌​​‌​‌​​‌‌‌‌​‌​‌​‌​‌‍ is a feature-rich, open-source steganography toolkit that hides secret data inside images, audio, documents, network packets, and more — using **100+ encoding techniques** across every file format imaginable.
 
 It runs **100% in your browser** (static site, no server) or as a **Python CLI/TUI/WebUI**. No data ever leaves your machine. Every technique that encodes also decodes. Every attack surface is also a detection surface.
 
@@ -68,7 +68,7 @@ It runs **100% in your browser** (static site, no server) or as a **Python CLI/T
 | Encryption | Basic/None | **AES-256-GCM + XOR** |
 | Image Formats | PNG only | **PNG, JPEG, WebP, GIF** |
 | File Types | Images only | **Images, audio, text, docs, network, archives, code** |
-| Example Library | None | **60+ pre-encoded example files** |
+| Example Library | None | **100+ pre-encoded example files** |
 | Browser-Based | - | **100% client-side JS, no server** |
 | AI Agent | - | **Exhaustive AI-powered decoding across all methods** |
 
@@ -82,7 +82,7 @@ ST3GG is a **dual-use** toolkit — built for both sides of the steganography ba
 
 Data exfiltration doesn't always look like data exfiltration. ST3GG lets red teams and researchers simulate **every known data smuggling vector** to test whether defenses actually catch them:
 
-- **75+ encoding techniques** across images, audio, text, documents, network packets, archives, and code files
+- **100+ encoding techniques** across images, audio, text, documents, network packets, archives, and code files
 - **Polyglot file generation** — files that are simultaneously valid as two formats (PNG+ZIP)
 - **Network protocol covert channels** — data hidden in DNS queries, ICMP payloads, TCP sequence numbers, HTTP headers
 - **Unicode steganography** — invisible homoglyphs, zero-width chars, variation selectors, confusable whitespace
@@ -103,7 +103,7 @@ The same toolkit that creates steganographic payloads also **detects and decodes
 - **Whitespace analysis** — trailing space/tab encoding, Unicode space variant detection
 - **Metadata forensics** — base64/hex string extraction, EXIF analysis, PNG chunk inspection
 - **Network packet analysis** — PCAP parsing for covert channel indicators
-- **146 automated tests** verifying detection accuracy with zero false negatives on known techniques
+- **200+ automated tests** verifying detection accuracy with zero false negatives on known techniques
 
 *See everything. Miss nothing. That's ALLSIGHT.*
 
@@ -116,7 +116,7 @@ The same toolkit that creates steganographic payloads also **detects and decodes
 ST3GG isn't just a toy. Different communities use steganography tools for very different — and very real — reasons.
 
 ### Penetration Testers & Red Teams
-Simulate data exfiltration through steganographic channels during engagements. Test whether endpoint DLP, SIEM rules, and network monitoring catch covert data smuggling across 75+ vectors. Generate adversarial payloads across every file type to validate detection coverage.
+Simulate data exfiltration through steganographic channels during engagements. Test whether endpoint DLP, SIEM rules, and network monitoring catch covert data smuggling across 100+ vectors. Generate adversarial payloads across every file type to validate detection coverage.
 
 ### Blue Teams & SOC Analysts
 Use ALLSIGHT to scan suspicious files for hidden payloads. Run exhaustive analysis against every known encoding method. Build detection rules from the comprehensive example library. Train analysts on what steganographic artifacts look like in the wild.
@@ -131,13 +131,13 @@ Analyze seized media for steganographic communication channels. Detect hidden da
 Explore steganography as a privacy-preserving communication channel. Understand the trade-offs between capacity, stealth, and compression survival. Test which techniques survive social media re-encoding for real-world deniable communication.
 
 ### Academics & Students
-Study the full landscape of steganographic techniques across every modality. Use the 60+ example files as a teaching dataset. Benchmark new detection algorithms against known encodings. The codebase is well-documented and MIT-licensed for research.
+Study the full landscape of steganographic techniques across every modality. Use the 100+ example files as a teaching dataset. Benchmark new detection algorithms against known encodings. The codebase is well-documented and Apache 2.0 licensed for research.
 
 ### AI Safety & LLM Security
 Test how AI systems handle steganographic content — hidden instructions in images, invisible Unicode in prompts, polyglot files that bypass content filters. Understand the data smuggling surface area that AI systems need to defend against.
 
 ### Data Loss Prevention (DLP) Vendors
-Benchmark your DLP solution against ST3GG's 75+ encoding techniques. If your product can't detect data hidden in DNS query names, TCP sequence numbers, or invisible Unicode characters — your customers deserve to know. ST3GG is your adversarial test suite.
+Benchmark your DLP solution against ST3GG's 100+ encoding techniques. If your product can't detect data hidden in DNS query names, TCP sequence numbers, or invisible Unicode characters — your customers deserve to know. ST3GG is your adversarial test suite.
 
 ---
 
@@ -184,7 +184,7 @@ An autonomous AI agent that analyzes uploaded files using **all known decoding m
 
 ---
 
-## ⊰ 75+ Steganographic Techniques ⊱
+## ⊰ 100+ Steganographic Techniques ⊱
 
 ST3GG doesn't just hide data in images. It covers **every modality**:
 
@@ -293,13 +293,13 @@ A 1920x1080 image with RGB 1-bit holds ~760KB. With RGBA 4-bit: **~4MB**.
 
 ## ⊰ Example Library ⊱
 
-ST3GG ships with **60+ pre-encoded example files** spanning every technique — images, audio, documents, network captures, code files, and more. Each one contains a hidden message that the analysis tools can find.
+ST3GG ships with **100+ pre-encoded example files** spanning every technique — images, audio, documents, network captures, code files, and more. Each one contains a hidden message that the analysis tools can find.
 
 ```bash
 # Regenerate all examples
 python examples/generate_examples.py
 
-# Run the full test suite (146 tests)
+# Run the full test suite (200+ tests)
 python test_examples.py
 ```
 
@@ -322,8 +322,8 @@ ST3GG/
 ├── injector.py             # Metadata & filename injection
 ├── ascii_art.py            # Terminal art & animations
 ├── f5stego-lib.js          # F5 JPEG steganography (browser)
-├── test_examples.py        # Test suite (146 tests)
-├── examples/               # 60+ pre-encoded example files
+├── test_examples.py        # Test suite (200+ tests)
+├── examples/               # 100+ pre-encoded example files
 │   ├── generate_examples.py
 │   └── README.md
 ├── requirements.txt

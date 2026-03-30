@@ -18,7 +18,7 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -36,6 +36,7 @@ dependencies = [
     "rich>=13.0.0",
     "textual>=0.40.0",
     "nicegui>=1.4.0",
+    "fastapi>=0.100.0",
 ]
 
 [project.optional-dependencies]
@@ -50,7 +51,7 @@ all = [
 steg = "cli:main_cli"
 steg-tui = "tui:main"
 steg-web = "webui:main"
-steg-web-legacy = "app:main"
+# steg-web-legacy requires: streamlit run app.py (no main() entry point)
 
 [project.urls]
 Homepage = "https://github.com/LYS10S/ST3GG"
