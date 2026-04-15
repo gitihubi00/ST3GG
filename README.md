@@ -17,7 +17,7 @@
 
 **Hide anything. In any file. Across every modality. Undetected.**
 
-👉 **Hosted site: [ste.gg](https://ste.gg)**
+👉 **Hostted site: [ste.gg](https://ste.gg)**
 
 [![PyPI](https://img.shields.io/pypi/v/stegg?color=green&label=pip%20install%20stegg)](https://pypi.org/project/stegg/)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL_3.0-purple.svg)](https://github.com/elder-plinius/st3gg/blob/main/LICENSE)
